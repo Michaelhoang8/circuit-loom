@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Circuit Loom</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a href="#" class="brand"><span>⌘</span> CIRCUIT LOOM</a
+      ><span class="subtitle">THE DIGITAL LOGIC BENCH</span
+      ><label class="file">Load netlist<input id="file" type="file" accept=".json" /></label>
+    </header>
+    <main>
+      <div class="topline">
+        <div>
+          <p class="eyebrow">WORKSPACE / 020</p>
+          <h1 id="title"></h1>
+        </div>
+        <label
+          >Example
+          <select id="example">
+            <option value="adder">Full adder</option>
+            <option value="shift">Shift register</option>
+            <option value="counter">Enabled counter</option>
+          </select></label
+        >
+      </div>
+      <div class="bench">
+        <aside>
+          <h2>INPUT SIGNALS</h2>
+          <div id="inputs"></div>
+          <h2>OUTPUT BUS</h2>
+          <div id="outputs"></div>
+          <p class="hint">Bits follow the listed output order.</p>
+          <h2>CLOCK CONTROL</h2>
+          <p class="clock">↑ <span id="edge">0</span><small>sampled edges</small></p>
+          <button id="tick" class="primary">Step one edge →</button>
+          <div class="pair">
+            <button id="eight">Step ×8</button><button id="undo">Undo edge</button>
+          </div>
+          <button id="reset" class="reset">Reset to initial state</button>
+          <p class="hint">
+            All registers sample together. Input switches change combinational logic immediately.
+          </p>
+        </aside>
+        <section class="circuit-panel">
+          <div class="panel-head">
+            <h2>LIVE NETLIST</h2>
+            <span>solid / combinational · dashed / register D</span>
+          </div>
+          <div class="graph-scroll">
+            <svg id="graph" role="group" aria-label="Circuit logic graph"></svg>
+          </div>
+          <div id="inspector" class="inspector">
+            Select a node to inspect its value and connections.
+          </div>
+        </section>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+      <section>
+        <div class="panel-head">
+          <h2>THE CLOCK TRACE</h2>
+          <button id="csv">Export trace CSV</button>
+        </div>
+        <div class="wave-scroll">
+          <svg id="wave" role="img" aria-label="Output waveforms after sampled clock edges"></svg>
+        </div>
+        <p id="trace-info" class="hint"></p>
+      </section>
+      <div class="lower">
+        <details>
+          <summary>Truth table / current register state</summary>
+          <p id="truth-state" class="hint"></p>
+          <div class="table-scroll">
+            <table>
+              <thead id="truth-head"></thead>
+              <tbody id="truth-body"></tbody>
+            </table>
+          </div>
+          <button id="truth-export">Export truth table JSON</button>
+        </details>
+        <details>
+          <summary>Edit the circuit / JSON netlist</summary>
+          <p class="hint">
+            Types: input, const, not, and, or, xor, mux, dff. Mux inputs: [select, when0, when1].
+            DFF: one input plus initial bit. Applying a netlist resets the clock trace.
+          </p>
+          <label class="sr-only" for="editor">Circuit netlist JSON</label
+          ><textarea id="editor" spellcheck="false"></textarea>
+          <div class="pair">
+            <button id="apply" class="primary">Validate & apply</button
+            ><button id="save">Save netlist</button>
+          </div>
+        </details>
+      </div>
+      <footer>
+        <span>0 / 1 · ONE CLOCK · ZERO PROPAGATION DELAY</span
+        ><span>Logic simulation. No analog timing model.</span>
+      </footer>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
