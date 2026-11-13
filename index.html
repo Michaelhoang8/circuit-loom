@@ -8,17 +8,18 @@
   </head>
   <body>
     <header>
-      <a href="#" class="brand"><span>⌘</span> CIRCUIT LOOM</a
-      ><span class="subtitle">THE DIGITAL LOGIC BENCH</span
-      ><label class="file">Load netlist<input id="file" type="file" accept=".json" /></label>
+      <h1>Circuit Loom</h1>
+      <nav aria-label="Workspace">
+        <button data-view="circuit" aria-pressed="true">Circuit</button
+        ><button data-view="truth" aria-pressed="false">Truth table</button
+        ><button data-view="netlist" aria-pressed="false">Netlist</button>
+      </nav>
+      <label class="file">Import JSON<input id="file" type="file" accept=".json" /></label>
     </header>
     <main>
-      <div class="topline">
-        <div>
-          <p class="eyebrow">WORKSPACE / 020</p>
-          <h1 id="title"></h1>
-        </div>
-        <label
+      <div class="toolbar">
+        <h2 id="title"></h2>
+        <label class="example"
           >Example
           <select id="example">
             <option value="adder">Full adder</option>
@@ -26,79 +27,67 @@
             <option value="counter">Enabled counter</option>
           </select></label
         >
+        <div class="clock-tools">
+          <span class="clock">Edge <b id="edge">0</b></span
+          ><button id="tick" class="primary">Clock ↑</button><button id="eight">×8</button
+          ><button id="undo">Undo</button><button id="reset">Reset</button>
+        </div>
       </div>
-      <div class="bench">
-        <aside>
-          <h2>INPUT SIGNALS</h2>
-          <div id="inputs"></div>
-          <h2>OUTPUT BUS</h2>
-          <div id="outputs"></div>
-          <p class="hint">Bits follow the listed output order.</p>
-          <h2>CLOCK CONTROL</h2>
-          <p class="clock">↑ <span id="edge">0</span><small>sampled edges</small></p>
-          <button id="tick" class="primary">Step one edge →</button>
-          <div class="pair">
-            <button id="eight">Step ×8</button><button id="undo">Undo edge</button>
+      <section id="circuit-view">
+        <div class="signals">
+          <div class="signal-group">
+            <h3>Inputs</h3>
+            <div id="inputs"></div>
           </div>
-          <button id="reset" class="reset">Reset to initial state</button>
-          <p class="hint">
-            All registers sample together. Input switches change combinational logic immediately.
-          </p>
-        </aside>
-        <section class="circuit-panel">
+          <div class="signal-group">
+            <h3>Outputs</h3>
+            <div id="outputs"></div>
+          </div>
+        </div>
+        <div class="graph-scroll">
+          <svg id="graph" role="group" aria-label="Circuit logic graph"></svg>
+        </div>
+        <div class="graph-caption">
+          <span>Solid: combinational · Dashed: register D</span
+          ><span>One clock · zero propagation delay</span>
+        </div>
+        <div id="inspector" class="inspector"></div>
+        <section class="trace">
           <div class="panel-head">
-            <h2>LIVE NETLIST</h2>
-            <span>solid / combinational · dashed / register D</span>
+            <h3>Output trace</h3>
+            <button id="csv">Export CSV</button>
           </div>
-          <div class="graph-scroll">
-            <svg id="graph" role="group" aria-label="Circuit logic graph"></svg>
+          <div class="wave-scroll">
+            <svg id="wave" role="img" aria-label="Output waveforms after sampled clock edges"></svg>
           </div>
-          <div id="inspector" class="inspector">
-            Select a node to inspect its value and connections.
-          </div>
+          <p id="trace-info" class="hint"></p>
         </section>
-      </div>
-      <p id="status" role="status" aria-live="polite"></p>
-      <section>
-        <div class="panel-head">
-          <h2>THE CLOCK TRACE</h2>
-          <button id="csv">Export trace CSV</button>
-        </div>
-        <div class="wave-scroll">
-          <svg id="wave" role="img" aria-label="Output waveforms after sampled clock edges"></svg>
-        </div>
-        <p id="trace-info" class="hint"></p>
       </section>
-      <div class="lower">
-        <details>
-          <summary>Truth table / current register state</summary>
-          <p id="truth-state" class="hint"></p>
-          <div class="table-scroll">
-            <table>
-              <thead id="truth-head"></thead>
-              <tbody id="truth-body"></tbody>
-            </table>
-          </div>
-          <button id="truth-export">Export truth table JSON</button>
-        </details>
-        <details>
-          <summary>Edit the circuit / JSON netlist</summary>
-          <p class="hint">
-            Types: input, const, not, and, or, xor, mux, dff. Mux inputs: [select, when0, when1].
-            DFF: one input plus initial bit. Applying a netlist resets the clock trace.
-          </p>
-          <label class="sr-only" for="editor">Circuit netlist JSON</label
-          ><textarea id="editor" spellcheck="false"></textarea>
-          <div class="pair">
-            <button id="apply" class="primary">Validate & apply</button
-            ><button id="save">Save netlist</button>
-          </div>
-        </details>
-      </div>
-      <footer>
-        <span>0 / 1 · ONE CLOCK · ZERO PROPAGATION DELAY</span
-        ><span>Logic simulation. No analog timing model.</span>
-      </footer>
+      <section id="truth-view" class="document-view" hidden>
+        <h2>Truth table</h2>
+        <p id="truth-state" class="hint"></p>
+        <div class="table-scroll">
+          <table>
+            <thead id="truth-head"></thead>
+            <tbody id="truth-body"></tbody>
+          </table>
+        </div>
+        <button id="truth-export">Export truth table JSON</button>
+      </section>
+      <section id="netlist-view" class="document-view" hidden>
+        <h2>Netlist</h2>
+        <p class="hint">
+          Types: input, const, not, and, or, xor, mux, dff. Mux inputs: [select, when0, when1]. DFF:
+          one input plus initial bit. Applying a netlist resets the clock trace.
+        </p>
+        <label class="sr-only" for="editor">Circuit netlist JSON</label
+        ><textarea id="editor" spellcheck="false"></textarea>
+        <div class="pair">
+          <button id="apply" class="primary">Validate & apply</button
+          ><button id="save">Save netlist</button>
+        </div>
+      </section>
+      <p id="status" role="status" aria-live="polite"></p>
     </main>
     <script type="module" src="app.js"></script>
   </body>

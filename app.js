@@ -27,6 +27,16 @@ function svg(tag, attrs, text) {
   if (text !== undefined) n.textContent = text;
   return n;
 }
+function showView(view) {
+  for (const name of ['circuit', 'truth', 'netlist']) {
+    $(name + '-view').hidden = name !== view;
+    document
+      .querySelector(`[data-view="${name}"]`)
+      .setAttribute('aria-pressed', String(name === view));
+  }
+}
+for (const button of document.querySelectorAll('[data-view]'))
+  button.addEventListener('click', () => showView(button.dataset.view));
 function status(text) {
   $('status').textContent = text;
 }
@@ -41,12 +51,15 @@ function load(source) {
   $('title').textContent = circuit.name;
   $('editor').value = JSON.stringify(serialize(circuit), null, 2);
   render();
+  showView('circuit');
   status(
     `Validated ${circuit.nodes.length} nodes · ${circuit.inputs.length} inputs · ${circuit.registers.length} registers.`,
   );
 }
 function inspect(id, values) {
   selected = id;
+  for (const node of $('graph').querySelectorAll('.node'))
+    node.classList.toggle('selected', node.dataset.node === id);
   const n = circuit.nodes.find((n) => n.id === id),
     fanout = circuit.nodes
       .filter((node) => (node.inputs || []).includes(id))
@@ -82,7 +95,7 @@ function graph(values) {
       const path = svg('path', {
         d: `M ${startX} ${startY} C ${startX + 35} ${startY}, ${endX - 35} ${endY}, ${endX} ${endY}`,
         fill: 'none',
-        stroke: values[dep] ? '#b99a5b' : '#444454',
+        stroke: values[dep] ? '#26885f' : '#b0bdb6',
         'stroke-width': values[dep] ? 2 : 1,
         'stroke-dasharray': n.type === 'dff' ? '4 4' : 'none',
         class: 'wire',
@@ -94,6 +107,7 @@ function graph(values) {
     const p = positions.get(n.id),
       group = svg('g', {
         class: 'node',
+        'data-node': n.id,
         role: 'button',
         tabindex: 0,
         'aria-label': `Inspect ${n.id}, ${n.type}, value ${values[n.id]}`,
@@ -105,8 +119,8 @@ function graph(values) {
         width: 110,
         height: 46,
         rx: n.type === 'dff' ? 2 : 8,
-        fill: values[n.id] ? '#322c23' : '#232330',
-        stroke: values[n.id] ? '#ad9159' : '#545064',
+        fill: values[n.id] ? '#e1f1e7' : '#ffffff',
+        stroke: values[n.id] ? '#26885f' : '#a7b5ac',
       }),
       svg('text', { x: p.x + 10, y: p.y + 18 }, n.id),
       svg('text', { x: p.x + 10, y: p.y + 34, class: 'kind' }, n.type.toUpperCase()),
@@ -143,7 +157,7 @@ function wave() {
         y1: 22,
         x2: left + i * cell,
         y2: height,
-        stroke: '#2e2d3c',
+        stroke: '#dce4df',
       }),
     );
   });
@@ -159,7 +173,7 @@ function wave() {
       path += ` L ${x} ${y + (previous ? 0 : 20)} L ${x} ${y + (value ? 0 : 20)} L ${x + cell} ${y + (value ? 0 : 20)}`;
       previous = value;
     }
-    frag.append(svg('path', { d: path, fill: 'none', stroke: '#c2a0e0', 'stroke-width': 2 }));
+    frag.append(svg('path', { d: path, fill: 'none', stroke: '#26885f', 'stroke-width': 2 }));
   });
   canvas.replaceChildren(frag);
   $('trace-info').textContent = trace.length
@@ -197,10 +211,12 @@ function truth() {
     : 'Combinational truth table over every input assignment.';
 }
 function render() {
+  const focusedInput = document.activeElement?.getAttribute('data-input');
   const current = evaluate(circuit, inputs, state);
   $('inputs').replaceChildren(
     ...circuit.inputs.map((id) => {
       const button = el('button', `${id} / ${inputs[id]}`);
+      button.dataset.input = id;
       button.setAttribute('aria-label', `Toggle input ${id}`);
       button.setAttribute('aria-pressed', String(inputs[id] === 1));
       button.addEventListener('click', () => {
@@ -212,6 +228,10 @@ function render() {
       return button;
     }),
   );
+  if (focusedInput)
+    [...$('inputs').children]
+      .find((button) => button.dataset.input === focusedInput)
+      ?.focus({ preventScroll: true });
   if (!circuit.inputs.length) $('inputs').append(el('p', 'No external inputs.'));
   $('outputs').replaceChildren(
     ...circuit.outputs.map((id) => {

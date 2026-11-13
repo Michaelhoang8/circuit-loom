@@ -14,6 +14,10 @@ python run.py
 
 Open http://127.0.0.1:8000. Computation stays in the browser. The server exposes only the four static app assets on loopback, checks Host headers, and applies a restrictive content policy.
 
+## Workspace
+
+The Circuit view places live input switches and output bits above the dependency graph, with clock controls in the toolbar and the waveform below. Green wires carry a high signal; selecting a node highlights it and shows its connections. Truth table and Netlist have separate views. Input switches retain keyboard focus when toggled.
+
 ## Try the bench
 
 - **Full adder:** toggle `a`, `b`, and `cin`; compare sum/carry with the complete eight-row truth table.
