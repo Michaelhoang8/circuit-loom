@@ -423,3 +423,37 @@ textarea {
     transition: none !important;
   }
 }
+.wire {
+  transition:
+    opacity 0.18s ease,
+    stroke-width 0.18s ease;
+}
+.wire.connected {
+  stroke-width: 3;
+  opacity: 1;
+  filter: drop-shadow(0 0 2px #26885f33);
+}
+.wire.muted-wire {
+  opacity: 0.2;
+}
+.node.signal-changed rect {
+  animation: signal-change 0.45s ease-out;
+}
+@keyframes signal-change {
+  from {
+    stroke-width: 4;
+    filter: drop-shadow(0 0 5px #26885f77);
+  }
+  to {
+    stroke-width: 1;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wire {
+    transition: none;
+  }
+  .node.signal-changed rect {
+    animation: none;
+  }
+}

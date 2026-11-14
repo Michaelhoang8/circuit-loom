@@ -2,7 +2,7 @@
 
 An interactive digital-logic bench with editable netlists, live signal values, simultaneous register sampling, undoable clock edges, truth tables, and waveform/CSV traces.
 
-![Counter and live netlist](docs/workbench.png)
+![Selected full-adder connections](docs/workbench.png)
 
 ## Run
 
@@ -17,6 +17,8 @@ Open http://127.0.0.1:8000. Computation stays in the browser. The server exposes
 ## Workspace
 
 The Circuit view places live input switches and output bits above the dependency graph, with clock controls in the toolbar and the waveform below. Green wires carry a high signal; selecting a node highlights it and shows its connections. Truth table and Netlist have separate views. Input switches retain keyboard focus when toggled.
+
+Selecting a node emphasizes its direct incoming and outgoing wires. Click the graph background or press Escape from a node to clear the emphasis. Nodes whose evaluated bit changed flash briefly after an input or clock update; this marks the completed state change rather than modeling propagation delay, and respects reduced-motion preferences.
 
 ## Try the bench
 

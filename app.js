@@ -15,7 +15,8 @@ let circuit,
   state,
   trace = [],
   selected = null,
-  fileRevision = 0;
+  fileRevision = 0,
+  previousValues = null;
 function el(tag, text) {
   const n = document.createElement(tag);
   if (text !== undefined) n.textContent = text;
@@ -44,6 +45,7 @@ function load(source) {
   const candidate = compile(source);
   fileRevision++;
   circuit = candidate;
+  previousValues = null;
   inputs = initialInputs(circuit);
   state = initialState(circuit);
   trace = [];
@@ -60,6 +62,11 @@ function inspect(id, values) {
   selected = id;
   for (const node of $('graph').querySelectorAll('.node'))
     node.classList.toggle('selected', node.dataset.node === id);
+  for (const wire of $('graph').querySelectorAll('.wire')) {
+    const related = wire.dataset.from === id || wire.dataset.to === id;
+    wire.classList.toggle('connected', related);
+    wire.classList.toggle('muted-wire', !related);
+  }
   const n = circuit.nodes.find((n) => n.id === id),
     fanout = circuit.nodes
       .filter((node) => (node.inputs || []).includes(id))
@@ -99,6 +106,8 @@ function graph(values) {
         'stroke-width': values[dep] ? 2 : 1,
         'stroke-dasharray': n.type === 'dff' ? '4 4' : 'none',
         class: 'wire',
+        'data-from': dep,
+        'data-to': n.id,
       });
       path.append(svg('title', {}, `${dep} → ${n.id} input ${index + 1}: ${values[dep]}`));
       frag.append(path);
@@ -106,7 +115,8 @@ function graph(values) {
   for (const n of circuit.nodes) {
     const p = positions.get(n.id),
       group = svg('g', {
-        class: 'node',
+        class:
+          previousValues && previousValues[n.id] !== values[n.id] ? 'node signal-changed' : 'node',
         'data-node': n.id,
         role: 'button',
         tabindex: 0,
@@ -136,6 +146,7 @@ function graph(values) {
     frag.append(group);
   }
   canvas.replaceChildren(frag);
+  previousValues = { ...values };
   if (selected) inspect(selected, values);
   else $('inspector').textContent = 'Select a node to inspect its value and connections.';
 }
@@ -325,3 +336,11 @@ $('file').addEventListener('change', async () => {
   }
 });
 load(EXAMPLES.adder);
+function clearInspection(){
+  selected=null;
+  for(const node of $('graph').querySelectorAll('.node'))node.classList.remove('selected');
+  for(const wire of $('graph').querySelectorAll('.wire'))wire.classList.remove('connected','muted-wire');
+  $('inspector').textContent='Select a node to inspect its value and connections.';
+}
+$('graph').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();clearInspection();}});
+$('graph').addEventListener('click',event=>{if(!event.target.closest('.node'))clearInspection();});
